@@ -6,10 +6,10 @@ header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json");
 
 // Database credentials
-$servername = "3.84.60.238:3306";
+$servername = "44.207.6.146:3306";
 $username   = "redzone";
 $password   = "Redzone123!";
-$dbname     = "redzone";
+$dbname     = "user_preferences";
 
 // Connect
 $conn = new mysqli($servername, $username, $password, $dbname);
@@ -50,26 +50,36 @@ if (!$name || !$location || !$favorite_team || !$favorite_player) {
     exit;
 }
 
-// Prepare and execute INSERT into your preferences table
-// (Make sure you have a table named `user_preferences` with matching columns)
-$stmt = $conn->prepare("
-    INSERT INTO user_preferences 
-        (name, location, favorite_team, favorite_player) 
+// Build SQL (with backticks around identifiers)
+$sql = "
+    INSERT INTO `user_preferences`
+      (`name`, `location`, `favorite_team`, `favorite_player`)
     VALUES (?, ?, ?, ?)
-");
-$stmt->bind_param("ssss", $name, $location, $favorite_team, $favorite_player);
+";
 
-if ($stmt->execute()) {
-    echo json_encode([
-        "success"   => true,
-        "insert_id" => $stmt->insert_id
-    ]);
-} else {
+// Prepare
+$stmt = $mysqli->prepare($sql);
+if (! $stmt) {
     http_response_code(500);
     echo json_encode([
         "success" => false,
-        "error"   => $stmt->error
+        "error"   => "Prepare failed: " . $mysqli->error,
+        "sql"     => $sql
     ]);
+    exit;
+}
+
+// Bind & execute
+$stmt->bind_param("ssss", $name, $location, $favorite_team, $favorite_player);
+if (! $stmt->execute()) {
+    http_response_code(500);
+    echo json_encode([
+        "success" => false,
+        "error"   => "Execute failed: " . $stmt->error,
+        "sql"     => $sql
+    ]);
+    $stmt->close();
+    exit;
 }
 
 $stmt->close();
