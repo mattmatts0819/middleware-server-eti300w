@@ -1,13 +1,16 @@
 
 <?php
 // submit_favorite.php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 // Allow CORS and return JSON
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json");
 
 // Database credentials
-$servername = "44.207.6.146:3306";
+$servername = "54.172.79.20:3306";
 $username   = "redzone";
 $password   = "Redzone123!";
 $dbname     = "redzone";
@@ -43,4 +46,5 @@ if ($conn->query($sql)) {
 }
 
 $conn->close();
+echo "Success!";
 ?>
